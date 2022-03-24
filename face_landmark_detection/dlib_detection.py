@@ -4,7 +4,7 @@ import numpy as np
 
 if __name__ == '__main__':
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor('E:/Projekt Magisterski/Pre-Trained Data/shape_predictor_68_face_landmarks.dat')
+    predictor = dlib.shape_predictor('E:/Projekt Magisterski/pre_trained_data/shape_predictor_68_face_landmarks.dat')
     cap = cv2.VideoCapture(0)
 
     while True:
