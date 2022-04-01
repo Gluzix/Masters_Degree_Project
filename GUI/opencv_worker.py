@@ -6,9 +6,11 @@ import numpy as np
 
 
 class OpenCvWorker(QObject):
+    pixmap_ready = pyqtSignal(QPixmap)
+    black_pixmap_ready = pyqtSignal(QPixmap)
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.pixmap_ready = pyqtSignal(QPixmap)
 
     def run(self):
         detector = dlib.get_frontal_face_detector()
@@ -20,6 +22,9 @@ class OpenCvWorker(QObject):
             ret, image = cap.read()
             gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             rects = detector(gray_image, 1)
+            height, width, channel = image.shape
+
+            blank_image = np.zeros((height, width, 3), np.uint8)
 
             for rect in rects:
                 shape = predictor(gray_image, rect)
@@ -28,16 +33,15 @@ class OpenCvWorker(QObject):
                     shape_numpy_arr[i] = (shape.part(i).x, shape.part(i).y)
 
                 for i, (x, y) in enumerate(shape_numpy_arr):
-                    cv2.circle(image, (x, y), 1, (0, 0, 255), -1)
+                    cv2.circle(image, (x, y), 1, (255, 255, 255), -1)
+                    cv2.circle(blank_image, (x, y), 1, (255, 255, 255), -1)
 
-            height, width, channel = image.shape
             bytesPerLine = 3 * width
-            qImage = QImage(image.data, width, height, bytesPerLine, QImage.Format_RGB888)
+            qImage = QImage(image.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
+            qImage_black = QImage(blank_image.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
+
             qPixmap = QPixmap.fromImage(qImage)
+            qPixmap_black = QPixmap.fromImage(qImage_black)
 
             self.pixmap_ready.emit(qPixmap)
-
-            if cv2.waitKey(10) == 27:
-                break
-
-        cap.release()
+            self.black_pixmap_ready.emit(qPixmap_black)
