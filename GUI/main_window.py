@@ -9,4 +9,4 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.setWindowTitle("Projekt Magisterski")
         self.live_data_widget = LiveDataWidget(self)
-        self.mainLayout.addWidget(self.live_data_widget)
+        self.main_layout.addWidget(self.live_data_widget)

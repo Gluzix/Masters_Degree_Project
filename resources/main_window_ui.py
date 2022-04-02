@@ -13,17 +13,48 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(718, 499)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.centralwidget)
+        MainWindow.setStyleSheet("QWidget {\n"
+"background-color: #F6F6F6;\n"
+"color: #303030;\n"
+"border:none;\n"
+"}\n"
+"\n"
+"QMainWindow{\n"
+"background-color: #F6F6F6;\n"
+"}\n"
+"\n"
+"QPushButton {\n"
+"border:none;\n"
+"color: #F6F6F6;\n"
+"background-color:#2305E2;\n"
+"border-radius:4px;\n"
+"min-height:30px;\n"
+"margin:10px;\n"
+"}\n"
+"")
+        self.central_widget = QtWidgets.QWidget(MainWindow)
+        self.central_widget.setObjectName("central_widget")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.central_widget)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.mainLayout = QtWidgets.QVBoxLayout()
-        self.mainLayout.setObjectName("mainLayout")
-        self.verticalLayout_2.addLayout(self.mainLayout)
-        self.livePushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.livePushButton.setObjectName("livePushButton")
-        self.verticalLayout_2.addWidget(self.livePushButton)
-        MainWindow.setCentralWidget(self.centralwidget)
+        self.main_layout = QtWidgets.QVBoxLayout()
+        self.main_layout.setObjectName("main_layout")
+        self.verticalLayout_2.addLayout(self.main_layout)
+        self.button_layout = QtWidgets.QGridLayout()
+        self.button_layout.setObjectName("button_layout")
+        self.record_button = QtWidgets.QPushButton(self.central_widget)
+        self.record_button.setObjectName("record_button")
+        self.button_layout.addWidget(self.record_button, 0, 1, 1, 1)
+        self.live_button = QtWidgets.QPushButton(self.central_widget)
+        self.live_button.setObjectName("live_button")
+        self.button_layout.addWidget(self.live_button, 0, 0, 1, 1)
+        self.upload_button = QtWidgets.QPushButton(self.central_widget)
+        self.upload_button.setObjectName("upload_button")
+        self.button_layout.addWidget(self.upload_button, 1, 1, 1, 1)
+        self.verticalLayout_2.addLayout(self.button_layout)
+        self.verticalLayout_2.setStretch(0, 1)
+        MainWindow.setCentralWidget(self.central_widget)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -31,4 +62,6 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.livePushButton.setText(_translate("MainWindow", "Live"))
+        self.record_button.setText(_translate("MainWindow", "Record"))
+        self.live_button.setText(_translate("MainWindow", "Live"))
+        self.upload_button.setText(_translate("MainWindow", "Upload"))

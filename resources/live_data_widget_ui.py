@@ -17,9 +17,15 @@ class Ui_Form(object):
         self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_2.setSpacing(0)
         self.gridLayout_2.setObjectName("gridLayout_2")
+        self.start_image_acquisition = QtWidgets.QPushButton(Form)
+        self.start_image_acquisition.setObjectName("start_image_acquisition")
+        self.gridLayout_2.addWidget(self.start_image_acquisition, 1, 0, 1, 1)
+        self.stop_image_acquisition = QtWidgets.QPushButton(Form)
+        self.stop_image_acquisition.setObjectName("stop_image_acquisition")
+        self.gridLayout_2.addWidget(self.stop_image_acquisition, 1, 1, 1, 1)
         self.mainLayout = QtWidgets.QGridLayout()
         self.mainLayout.setObjectName("mainLayout")
-        self.gridLayout_2.addLayout(self.mainLayout, 0, 0, 1, 1)
+        self.gridLayout_2.addLayout(self.mainLayout, 0, 0, 1, 2)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -27,3 +33,5 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
+        self.start_image_acquisition.setText(_translate("Form", "Start"))
+        self.stop_image_acquisition.setText(_translate("Form", "Stop"))
