@@ -11,7 +11,7 @@ class OpenCvWorker(QObject):
 
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(
-        'E:/Projekt Magisterski/pre_trained_data/shape_predictor_68_face_landmarks.dat')
+        'D:/Projekt Magisterski/pre_trained_data/shape_predictor_68_face_landmarks.dat')
 
     def __init__(self, record=False, parent=None):
         super().__init__(parent)
