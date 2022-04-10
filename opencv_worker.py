@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QMutex, QMutexLocker
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QMutex, QMutexLocker, QDir
 from PyQt6.QtGui import QPixmap, QImage
 import cv2
 import dlib
@@ -13,11 +13,13 @@ class OpenCvWorker(QObject):
     predictor = dlib.shape_predictor(
         'E:/Projekt Magisterski/pre_trained_data/shape_predictor_68_face_landmarks.dat')
 
-    def __init__(self, parent=None):
+    def __init__(self, record=False, parent=None):
         super().__init__(parent)
         self.cap = None
         self.is_running = False
         self.mutex = QMutex()
+        self.record = record
+        self.fps_to_record = 15
 
     def __del__(self):
         self.stop()
@@ -28,6 +30,9 @@ class OpenCvWorker(QObject):
             self.is_running = False
             self.cap.release()
 
+    def set_fps_to_record(self, fps_to_record):
+        self.fps_to_record = fps_to_record
+
     @pyqtSlot()
     def start(self):
         if not self.is_running:
@@ -37,6 +42,9 @@ class OpenCvWorker(QObject):
 
     def run(self):
         image_count = 0
+        dir = QDir()
+        path_train_src = dir.currentPath() + "/Pix2Pix/train/src/"
+        path_train_tar = dir.currentPath() + "/Pix2Pix/train/tar/"
         while self.is_running:
             QMutexLocker(self.mutex)
             ret, image = self.cap.read()
@@ -56,8 +64,12 @@ class OpenCvWorker(QObject):
                     cv2.circle(image, (x, y), 1, (255, 255, 255), -1)
                     cv2.circle(blank_image, (x, y), 1, (255, 255, 255), -1)
 
-            # cv2.imwrite(f"normal_{image_count}.png", image)
-            # cv2.imwrite(f"black_{image_count}.png", blank_image)
+            if self.record:
+                cv2.imwrite(f"{path_train_src}image_{image_count}.png", copy_image)
+                cv2.imwrite(f"{path_train_tar}image_{image_count}.png", blank_image)
+                if image_count == self.fps_to_record:
+                    self.stop()
+                    break
 
             image_count += 1
 

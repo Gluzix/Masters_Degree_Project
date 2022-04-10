@@ -1,15 +1,15 @@
 from PyQt6.QtWidgets import QWidget
 from resources.live_data_widget_ui import Ui_Form
-from GUI.image_widget import ImageWidget
+from image_widget import ImageWidget
 from PyQt6.QtCore import pyqtSlot, QThread, pyqtSignal
-from GUI.opencv_worker import OpenCvWorker
+from opencv_worker import OpenCvWorker
 
 
 class LiveDataWidget(QWidget, Ui_Form):
     acquisition_start = pyqtSignal()
     acquisition_stop = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, record=False, frames_to_record=15, parent=None):
         super().__init__(parent)
         self.setupUi(self)
         self.image_widget = ImageWidget(self)
@@ -18,7 +18,11 @@ class LiveDataWidget(QWidget, Ui_Form):
         self.mainLayout.addWidget(self.black_image_widget, 0, 1)
 
         self.thread = QThread()
-        self.open_cv_worker = OpenCvWorker()
+        if record:
+            self.open_cv_worker = OpenCvWorker(record)
+            self.open_cv_worker.set_fps_to_record(frames_to_record)
+        else:
+            self.open_cv_worker = OpenCvWorker(record)
         self.open_cv_worker.moveToThread(self.thread)
 
         self.start_image_acquisition.clicked.connect(self.on_start_button_clicked)
