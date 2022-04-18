@@ -53,7 +53,7 @@ class OpenCvWorker(QObject):
             height, width, channel = image.shape
 
             if self.record:
-                cv2.imwrite(f"{path_train_src}image_{image_count}.png", image)
+                cv2.imwrite(f"{path_train_tar}image_{image_count}.png", image)
 
             blank_image = np.zeros((height, width, 3), np.uint8)
 
@@ -64,11 +64,11 @@ class OpenCvWorker(QObject):
                     shape_numpy_arr[i] = (shape.part(i).x, shape.part(i).y)
 
                 for i, (x, y) in enumerate(shape_numpy_arr):
-                    cv2.circle(image, (x, y), 1, (255, 255, 255), -1)
-                    cv2.circle(blank_image, (x, y), 1, (255, 255, 255), -1)
+                    cv2.circle(image, (x, y), 2, (255, 255, 255), -1)
+                    cv2.circle(blank_image, (x, y), 2, (255, 255, 255), -1)
 
             if self.record:
-                cv2.imwrite(f"{path_train_tar}image_{image_count}.png", blank_image)
+                cv2.imwrite(f"{path_train_src}image_{image_count}.png", blank_image)
                 if image_count == self.fps_to_record:
                     self.stop()
                     break

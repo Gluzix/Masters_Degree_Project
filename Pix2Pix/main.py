@@ -103,7 +103,7 @@ def define_gan(g_model, d_model, image_shape):
 
 def define_encoder_block(layer_in, n_filters, batchnorm=True):
     init = RandomNormal(stddev=0.02)
-    g = Conv2D(n_filters, (4,4), strides=(2,2), padding='same', kernel_initialize=init)(layer_in)
+    g = Conv2D(n_filters, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(layer_in)
     if batchnorm:
         g = BatchNormalization()(g, training=True)
 
@@ -151,7 +151,7 @@ def define_discriminator(image_shape):
     init = RandomNormal(stddev=0.02)
     in_src_image = Input(shape=image_shape)
     in_target_image = Input(shape=image_shape)
-    merged = Concatenate()[in_src_image, in_target_image]
+    merged = Concatenate()([in_src_image, in_target_image])
 
     d = Conv2D(64, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init)(merged)
     d = LeakyReLU(alpha=0.2)(d)
@@ -214,12 +214,19 @@ def plot_images():
 
 
 if __name__ == '__main__':
-    path_src = 'train/src/'
-    path_tar = 'train/tar/'
-    [src_images, tar_images] = load_images(path_src, path_tar)
-    print('Loaded: ', src_images.shape, tar_images.shape)
-    filename = 'maps_256.npz'
-    savez_compressed(filename, src_images, tar_images)
-    print('saved dataset: ', filename)
-
-    plot_images()
+    dataset = load_real_samples('maps_256.npz')
+    print('Loaded', dataset[0].shape, dataset[1].shape)
+    image_shape = dataset[0].shape[1:]
+    d_model = define_discriminator(image_shape)
+    g_model = define_generator(image_shape)
+    gan_model = define_gan(g_model, d_model, image_shape)
+    train(d_model, g_model, gan_model, dataset)
+    # path_src = 'train/src/'
+    # path_tar = 'train/tar/'
+    # [src_images, tar_images] = load_images(path_src, path_tar)
+    # print('Loaded: ', src_images.shape, tar_images.shape)
+    # filename = 'maps_256.npz'
+    # savez_compressed(filename, src_images, tar_images)
+    # print('saved dataset: ', filename)
+    #
+    # plot_images()
