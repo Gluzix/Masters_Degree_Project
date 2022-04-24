@@ -22,6 +22,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot()
     def on_record_data_button_clicked(self):
-        live_data_widget = LiveDataWidget(True, 300, self)
+        live_data_widget = LiveDataWidget(True, 500, self)
         self.main_layout.replaceWidget(self.main_widget, live_data_widget)
         self.main_widget = live_data_widget

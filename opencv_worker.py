@@ -11,7 +11,7 @@ class OpenCvWorker(QObject):
 
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(
-        'D:/Projekt Magisterski/pre_trained_data/shape_predictor_68_face_landmarks.dat')
+        'E:/Projekt Magisterski/pre_trained_data/shape_predictor_68_face_landmarks.dat')
 
     def __init__(self, record=False, parent=None):
         super().__init__(parent)
@@ -43,8 +43,8 @@ class OpenCvWorker(QObject):
     def run(self):
         image_count = 0
         dir = QDir()
-        path_train_src = dir.currentPath() + "/Pix2Pix/train/src/"
-        path_train_tar = dir.currentPath() + "/Pix2Pix/train/tar/"
+        path_train_src = dir.currentPath() + "/Pix2Pix/train_2/src/"
+        path_train_tar = dir.currentPath() + "/Pix2Pix/train_2/tar/"
         while self.is_running:
             QMutexLocker(self.mutex)
             ret, image = self.cap.read()
