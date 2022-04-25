@@ -60,7 +60,7 @@ def gather_image_and_try_predict():
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(
-        'E:/Projekt Magisterski/pre_trained_data/shape_predictor_68_face_landmarks.dat')
+        'E:/Projekt Magisterski/resources/pre_trained_data/shape_predictor_68_face_landmarks.dat')
     rects = detector(gray_image, 1)
     height, width, channel = image.shape
     blank_image = np.zeros((height, width, 3), np.uint8)
@@ -74,29 +74,38 @@ def gather_image_and_try_predict():
             cv2.circle(image, (x, y), 2, (255, 255, 255), -1)
             cv2.circle(blank_image, (x, y), 2, (255, 255, 255), -1)
 
-    pyplot.imshow(image)
-
     image_pil = Image.fromarray(blank_image)
-    test_ = image_pil.resize((256, 256))
-    pyplot.imshow(test_)
-    pyplot.show()
+    test_ = image_pil.resize((256, 256), resample=Image.NEAREST)
+
+    cap.release()
 
     # Model loading...
-    model = load_model("E:/Projekt Magisterski/Pix2Pix/model_020040.h5")
-    # pixels = img_to_array(blank_image)
+    model = load_model("E:/Projekt Magisterski/resources/model_resources/model_020040.h5")
 
-    img = Image.fromarray(blank_image)
-    resized_image = img.resize((256, 256))
-    pyplot.imshow(img)
+    arr = img_to_array(test_)
+    arr = arr[np.newaxis, ...]
+
+    X_fakeB, _ = Pix2PixTrainer.generate_fake_samples(model, arr, 1)
+    X_fakeB = (X_fakeB + 1) / 2.0
+
+    fig, axs = pyplot.subplots(2, 2)
+    axs[0, 0].imshow(arr[0])
+    axs[0, 0].set_title('from camera - landmark')
+    axs[0, 1].imshow(X_fakeB[0])
+    axs[0, 1].set_title('from camera - predicted')
+
+    dataset = load_real_samples('E:/Projekt Magisterski/resources/model_resources/maps_256_2.npz')
+    [X_realA_2, X_realB_2], _ = Pix2PixTrainer.generate_real_samples(dataset, 1, 1)
+    X_realA_2 = (X_realA_2 + 1) / 2.0
+    X_fakeB_2, _ = Pix2PixTrainer.generate_fake_samples(model, X_realA_2, 1)
+    X_fakeB_2 = (X_fakeB_2 + 1) / 2.0
+
+    axs[1, 0].imshow(X_realA_2[0])
+    axs[1, 0].set_title('from dataset - landmark')
+    axs[1, 1].imshow(X_fakeB_2[0])
+    axs[1, 1].set_title('from dataset - predicted')
+
     pyplot.show()
-    arr = img_to_array(img)
-    # arr = arr[np.newaxis, ...]
-    pyplot.imshow(arr)
-
-    # X_fakeB, _ = generate_fake_samples(model, arr, 1)
-    # X_fakeB = (X_fakeB + 1) / 2.0
-    # pyplot.imshow(X_fakeB[0])
-    # pyplot.show()
 
 
 def try_to_predict(path_to_dataset: str, path_to_model: str):
@@ -136,4 +145,4 @@ if __name__ == '__main__':
     #                'E:/Projekt Magisterski/resources/model_resources/train_2/tar',
     #                'maps_256_2.npz')
 
-    # gather_image_and_try_predict()
+    gather_image_and_try_predict()
