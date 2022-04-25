@@ -1,2 +1,5 @@
 pre_trained_data
 .idea
+resources/pre_trained_data
+resources/model_resources
+__pycache__
