@@ -1,7 +1,7 @@
 from os import listdir
 from numpy import asarray
 from keras.preprocessing.image import img_to_array
-from keras.preprocessing.image import load_img
+from keras.preprocessing.image import load_img, smart_resize
 from keras.models import load_model
 from matplotlib import pyplot
 import cv2
@@ -71,13 +71,12 @@ def gather_image_and_try_predict():
             shape_numpy_arr[i] = (shape.part(i).x, shape.part(i).y)
 
         for i, (x, y) in enumerate(shape_numpy_arr):
-            cv2.circle(image, (x, y), 2, (255, 255, 255), -1)
             cv2.circle(blank_image, (x, y), 2, (255, 255, 255), -1)
+
+    cap.release()
 
     image_pil = Image.fromarray(blank_image)
     test_ = image_pil.resize((256, 256), resample=Image.NEAREST)
-
-    cap.release()
 
     # Model loading...
     model = load_model("E:/Projekt Magisterski/resources/model_resources/model_020040.h5")

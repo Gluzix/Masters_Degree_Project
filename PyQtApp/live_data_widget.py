@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import QWidget
-from resources.live_data_widget_ui import Ui_Form
-from image_widget import ImageWidget
+from resources.qt_resources.live_data_widget_ui import Ui_Form
+from PyQtApp.image_widget import ImageWidget
 from PyQt6.QtCore import pyqtSlot, QThread, pyqtSignal
-from opencv_worker import OpenCvWorker
+from PyQtApp.opencv_worker import OpenCvWorker
 
 
 class LiveDataWidget(QWidget, Ui_Form):

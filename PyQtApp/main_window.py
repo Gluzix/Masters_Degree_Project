@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QWidget
 from PyQt6.QtCore import pyqtSlot
-from resources.main_window_ui import Ui_MainWindow
-from live_data_widget import LiveDataWidget
+from resources.qt_resources.main_window_ui import Ui_MainWindow
+from PyQtApp.live_data_widget import LiveDataWidget
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
