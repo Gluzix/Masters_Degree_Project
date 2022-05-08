@@ -137,15 +137,20 @@ class Pix2Pix:
         model = load_model(path_to_model)
         [X_realA, X_realB] = Pix2PixTrainer.generate_real_samples_array(dataset)
         counter = 0
-        for each in X_realA:
-            each = each[np.newaxis, ...]
-            each = (each + 1) / 2.0
-            X_fakeB, y = Pix2PixTrainer.generate_fake_samples(model, each, 1)
-            pyplot.imshow(X_fakeB[0])
-            cv2.imshow("name", X_fakeB[0])
-            if cv2.waitKey(25) & 0xFF == ord('q'):
+        out = cv2.VideoWriter('project.avi', cv2.VideoWriter_fourcc(*'DIVX'), 20.0, (512, 256))
+
+        for realA, realB in zip(X_realA, X_realB):
+            realA = realA[np.newaxis, ...]
+            realA = (realA + 1) / 2.0
+            X_fakeB, y = Pix2PixTrainer.generate_fake_samples(model, realA, 1)
+            vis = np.concatenate((realB, X_fakeB[0]), axis=1)
+            cv2.imshow("name1", vis)
+            out.write(vis)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             counter += 1
+
+        out.release()
 
     @staticmethod
     def train(path_to_dataset: str):
