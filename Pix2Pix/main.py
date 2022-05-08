@@ -119,8 +119,33 @@ class Pix2Pix:
         X_realA = (X_realA + 1) / 2.0
         X_fakeB, _ = Pix2PixTrainer.generate_fake_samples(model, X_realA, 1)
         X_fakeB = (X_fakeB + 1) / 2.0
-        pyplot.imshow(X_fakeB[0])
+
+        fig, axs = pyplot.subplots(1, 3)
+
+        axs[0].imshow(X_realB[0])
+        axs[0].set_title('Real')
+        axs[1].imshow(X_realA[0])
+        axs[1].set_title('Landmark')
+        axs[2].imshow(X_fakeB[0])
+        axs[2].set_title('Fake')
+
         pyplot.show()
+
+    @staticmethod
+    def try_to_predict_and_save(path_to_dataset: str, path_to_model: str):
+        dataset = Pix2Pix.load_real_samples(path_to_dataset)
+        model = load_model(path_to_model)
+        [X_realA, X_realB] = Pix2PixTrainer.generate_real_samples_array(dataset)
+        counter = 0
+        for each in X_realA:
+            each = each[np.newaxis, ...]
+            each = (each + 1) / 2.0
+            X_fakeB, y = Pix2PixTrainer.generate_fake_samples(model, each, 1)
+            pyplot.imshow(X_fakeB[0])
+            cv2.imshow("name", X_fakeB[0])
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+            counter += 1
 
     @staticmethod
     def train(path_to_dataset: str):
@@ -139,13 +164,17 @@ class Pix2Pix:
         Pix2Pix.plot_images(filename)
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
     # try_to_predict('E:/Projekt Magisterski/resources/model_resources/maps_256_2.npz',
     #                'E:/Projekt Magisterski/resources/model_resources/model_020040.h5')
 
-    # train('E:/Projekt Magisterski/resources/model_resources/maps_256_2.npz')
+    # Pix2Pix.train('maps_256_trump.npz')
 
-    # create_dataset('E:/Projekt Magisterski/resources/model_resources/train_2/src',
-    #                'E:/Projekt Magisterski/resources/model_resources/train_2/tar',
-    #                'maps_256_2.npz')
+    # Pix2Pix.try_to_predict('maps_256_kamil.npz',
+    #                        'model_062560.h5')
 
+    # Pix2Pix.create_dataset('src/',
+    #                        'tar/',
+    #                        'maps_256_kamil.npz')
+
+    Pix2Pix.try_to_predict_and_save('maps_256_kamil.npz', 'model_062560.h5')
