@@ -43,8 +43,8 @@ class OpenCvWorker(QObject):
     def run(self):
         image_count = 0
         dir = QDir()
-        path_train_src = dir.currentPath() + "/Pix2Pix/train_2/src/"
-        path_train_tar = dir.currentPath() + "/Pix2Pix/train_2/tar/"
+        path_train_src = dir.currentPath() + "/src/"
+        path_train_tar = dir.currentPath() + "/tar/"
         while self.is_running:
             QMutexLocker(self.mutex)
             ret, image = self.cap.read()
@@ -52,10 +52,10 @@ class OpenCvWorker(QObject):
             rects = self.detector(gray_image, 1)
             height, width, channel = image.shape
 
-            if self.record:
-                cv2.imwrite(f"{path_train_tar}image_{image_count}.png", image)
-
             blank_image = np.zeros((height, width, 3), np.uint8)
+
+            if not rects:
+                continue
 
             for rect in rects:
                 shape = self.predictor(gray_image, rect)
@@ -64,11 +64,11 @@ class OpenCvWorker(QObject):
                     shape_numpy_arr[i] = (shape.part(i).x, shape.part(i).y)
 
                 for i, (x, y) in enumerate(shape_numpy_arr):
-                    cv2.circle(image, (x, y), 2, (255, 255, 255), -1)
                     cv2.circle(blank_image, (x, y), 2, (255, 255, 255), -1)
 
             if self.record:
                 cv2.imwrite(f"{path_train_src}image_{image_count}.png", blank_image)
+                cv2.imwrite(f"{path_train_tar}image_{image_count}.png", image)
                 if image_count == self.fps_to_record:
                     self.stop()
                     break
