@@ -64,3 +64,9 @@ class Pix2PixTrainer:
         X1, X2 = trainA[ix], trainB[ix]
         y = ones((n_samples, patch_shape, patch_shape, 1))
         return [X1, X2], y
+
+    @staticmethod
+    def generate_real_samples_array(dataset):
+        trainA, trainB = dataset
+        X1, X2 = trainA[:], trainB[:]
+        return [X1, X2]

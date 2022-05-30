@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QWidget
 from PyQt6.QtCore import pyqtSlot
-from resources.main_window_ui import Ui_MainWindow
-from live_data_widget import LiveDataWidget
+from resources.qt_resources.main_window_ui import Ui_MainWindow
+from PyQtApp.live_data_widget import LiveDataWidget
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -22,6 +22,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot()
     def on_record_data_button_clicked(self):
-        live_data_widget = LiveDataWidget(True, 500, self)
+        live_data_widget = LiveDataWidget(True, 240, self)
         self.main_layout.replaceWidget(self.main_widget, live_data_widget)
         self.main_widget = live_data_widget

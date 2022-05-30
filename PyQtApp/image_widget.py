@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QGraphicsPixmapItem, QGraphicsScene
 from PyQt6.QtGui import QPixmap
-from resources.image_widget_ui import Ui_Form
+from resources.qt_resources.image_widget_ui import Ui_Form
 from PyQt6.QtCore import pyqtSlot
 
 
