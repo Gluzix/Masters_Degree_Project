@@ -1,7 +1,7 @@
 from os import listdir
 from numpy import asarray
 from keras.preprocessing.image import img_to_array
-from keras.preprocessing.image import load_img, smart_resize
+from keras.preprocessing.image import load_img
 from keras.models import load_model
 from matplotlib import pyplot
 import cv2

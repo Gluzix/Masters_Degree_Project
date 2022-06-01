@@ -1,6 +1,6 @@
 import cv2
 
-imagePath = "E:/Projekt Magisterski/Pix2Pix/tar/image_1.png"
+imagePath = "E:/Projekt Magisterski/FramesFromVideo/images/image_1340.png"
 cascPath = "haarcascade_frontalface_default.xml"
 
 faceCascade = cv2.CascadeClassifier(cascPath)
@@ -20,6 +20,7 @@ print("Found {0} faces!".format(len(faces)))
 
 for (x, y, w, h) in faces:
     cv2.rectangle(image, (x-70, y-70), (x+w+70, y+h+70), (0, 255, 0), 2)
+    # cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
     cropped_image = image[y-70:y+h+70, x-70:x+w+70]
     cv2.imshow("Faces found", cropped_image)
     cv2.waitKey(0)
