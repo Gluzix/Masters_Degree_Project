@@ -11,7 +11,7 @@ class Pix2PixTrainer:
         self.gan = gan
         self.dataset = dataset
 
-    def train(self, n_epochs=100, n_batch=1):
+    def train(self, n_epochs=400, n_batch=2):
         n_patch = self.discriminator.output_shape[1]
         trainA, trainB = self.dataset
         bat_per_epo = int(len(trainA) / n_batch)

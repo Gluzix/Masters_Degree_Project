@@ -43,32 +43,15 @@ class OpenCvWorker(QObject):
     def run(self):
         image_count = 0
         dir = QDir()
-        path_train_src = dir.currentPath() + "/src/"
-        path_train_tar = dir.currentPath() + "/tar/"
+        path_images = dir.currentPath() + "/images/"
         while self.is_running:
             QMutexLocker(self.mutex)
             ret, image = self.cap.read()
-            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            rects = self.detector(gray_image, 1)
+
             height, width, channel = image.shape
 
-            blank_image = np.zeros((height, width, 3), np.uint8)
-
-            if not rects:
-                continue
-
-            for rect in rects:
-                shape = self.predictor(gray_image, rect)
-                shape_numpy_arr = np.zeros((68, 2), dtype='int')
-                for i in range(0, 68):
-                    shape_numpy_arr[i] = (shape.part(i).x, shape.part(i).y)
-
-                for i, (x, y) in enumerate(shape_numpy_arr):
-                    cv2.circle(blank_image, (x, y), 2, (255, 255, 255), -1)
-
             if self.record:
-                cv2.imwrite(f"{path_train_src}image_{image_count}.png", blank_image)
-                cv2.imwrite(f"{path_train_tar}image_{image_count}.png", image)
+                cv2.imwrite(f"{path_images}image_{image_count}.png", image)
                 if image_count == self.fps_to_record:
                     self.stop()
                     break
@@ -77,10 +60,7 @@ class OpenCvWorker(QObject):
 
             bytesPerLine = 3 * width
             qImage = QImage(image.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
-            qImage_black = QImage(blank_image.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
 
             qPixmap = QPixmap.fromImage(qImage)
-            qPixmap_black = QPixmap.fromImage(qImage_black)
 
             self.pixmap_ready.emit(qPixmap)
-            self.black_pixmap_ready.emit(qPixmap_black)

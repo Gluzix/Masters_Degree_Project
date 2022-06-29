@@ -1,7 +1,7 @@
 import cv2
 
 if __name__ == '__main__':
-    vidcap = cv2.VideoCapture('donald_trump_movie.mp4')
+    vidcap = cv2.VideoCapture('test_duda.mp4')
     success, image = vidcap.read()
     count = 0
     while success:

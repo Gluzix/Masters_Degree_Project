@@ -60,17 +60,42 @@ class Pix2Pix:
 
     @staticmethod
     def gather_image_and_try_predict():
+        cascPath = "haarcascade_frontalface_default.xml"
+        faceCascade = cv2.CascadeClassifier(cascPath)
+
         cap = cv2.VideoCapture(0)
         ret, image = cap.read()
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        faces = faceCascade.detectMultiScale(
+            gray_image,
+            scaleFactor=1.1,
+            minNeighbors=5,
+            minSize=(30, 30),
+            flags=cv2.CASCADE_SCALE_IMAGE
+        )
+
+        (x, y, w, h) = faces[0]
+
+        cropped_image_gray = gray_image[y - 70:y + h + 70, x - 70:x + w + 70]
+        cropped_image_color = image[y - 70:y + h + 70, x - 70:x + w + 70]
+
+        try:
+            resized_cropped_image_gray = cv2.resize(cropped_image_gray, (256, 256), interpolation=cv2.INTER_CUBIC)
+            resized_cropped_image_color = cv2.resize(cropped_image_color, (256, 256), interpolation=cv2.INTER_CUBIC)
+        except Exception as e:
+            print(str(e))
+            return
+
         detector = dlib.get_frontal_face_detector()
         predictor = dlib.shape_predictor(
             'E:/Projekt Magisterski/resources/pre_trained_data/shape_predictor_68_face_landmarks.dat')
-        rects = detector(gray_image, 1)
-        height, width, channel = image.shape
+        rects = detector(resized_cropped_image_gray, 1)
+
+        height, width, channel = resized_cropped_image_color.shape
         blank_image = np.zeros((height, width, 3), np.uint8)
         for rect in rects:
-            shape = predictor(gray_image, rect)
+            shape = predictor(resized_cropped_image_gray, rect)
             shape_numpy_arr = np.zeros((68, 2), dtype='int')
             for i in range(0, 68):
                 shape_numpy_arr[i] = (shape.part(i).x, shape.part(i).y)
@@ -84,7 +109,7 @@ class Pix2Pix:
         test_ = image_pil.resize((256, 256), resample=Image.NEAREST)
 
         # Model loading...
-        model = load_model("E:/Projekt Magisterski/resources/model_resources/model_020040.h5")
+        model = load_model("E:/Projekt Magisterski/resources/model_resources/model_071500.h5")
 
         arr = img_to_array(test_)
         arr = arr[np.newaxis, ...]
@@ -129,28 +154,27 @@ class Pix2Pix:
         axs[2].imshow(X_fakeB[0])
         axs[2].set_title('Fake')
 
+        cv2.imshow("test", X_fakeB[0])
+
         pyplot.show()
 
     @staticmethod
-    def try_to_predict_and_save(path_to_dataset: str, path_to_model: str):
+    def try_to_predict_and_show_multiple_frames(path_to_dataset: str, path_to_model: str):
         dataset = Pix2Pix.load_real_samples(path_to_dataset)
         model = load_model(path_to_model)
         [X_realA, X_realB] = Pix2PixTrainer.generate_real_samples_array(dataset)
         counter = 0
-        out = cv2.VideoWriter('project.avi', cv2.VideoWriter_fourcc(*'DIVX'), 20.0, (512, 256))
 
         for realA, realB in zip(X_realA, X_realB):
             realA = realA[np.newaxis, ...]
             realA = (realA + 1) / 2.0
             X_fakeB, y = Pix2PixTrainer.generate_fake_samples(model, realA, 1)
-            vis = np.concatenate((realB, X_fakeB[0]), axis=1)
-            cv2.imshow("name1", vis)
-            out.write(vis)
+            X_fakeB = (X_fakeB + 1) / 2.0
+            # vis = np.concatenate((realB, X_fakeB[0]), axis=1)
+            cv2.imshow("name1", X_fakeB[0])
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             counter += 1
-
-        out.release()
 
     @staticmethod
     def train(path_to_dataset: str):
@@ -170,16 +194,21 @@ class Pix2Pix:
 
 
 if __name__ == '__main__':
-    # try_to_predict('E:/Projekt Magisterski/resources/model_resources/maps_256_2.npz',
-    #                'E:/Projekt Magisterski/resources/model_resources/model_020040.h5')
+    # Pix2Pix.try_to_predict('E:/Projekt Magisterski/Pix2Pix/maps_256_kamil_256_.npz',
+    #                        'E:/Projekt Magisterski/Pix2Pix/model_120000.h5')
 
-    # Pix2Pix.train('maps_256_trump.npz')
+    # Pix2Pix.gather_image_and_try_predict()
+
+    # Pix2Pix.train('maps_256_trump_256_at_begin.npz')
 
     # Pix2Pix.try_to_predict('maps_256_kamil.npz',
     #                        'model_062560.h5')
 
     # Pix2Pix.create_dataset('src/',
     #                        'tar/',
-    #                        'maps_256_kamil.npz')
+    #                        'maps_256_duda_256_.npz')
 
-    Pix2Pix.try_to_predict_and_save('maps_256_kamil.npz', 'model_062560.h5')
+    # Pix2Pix.try_to_predict_and_show_multiple_frames('maps_256_kamil_256_.npz', 'model_142800.h5')
+    # Pix2Pix.try_to_predict_and_show_multiple_frames('maps_256_kamil_256_.npz', 'model_120000.h5')
+
+    # Pix2Pix.plot_images("maps_256_trump_256_at_begin.npz")

@@ -3,3 +3,4 @@ pre_trained_data
 resources/pre_trained_data
 resources/model_resources
 __pycache__
+*.png
