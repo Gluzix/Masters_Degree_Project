@@ -1,6 +1,6 @@
 import cv2
 
-imagePath = "E:/Projekt Magisterski/FramesFromVideo/images/image_1340.png"
+imagePath = "image_136.png"
 cascPath = "haarcascade_frontalface_default.xml"
 
 faceCascade = cv2.CascadeClassifier(cascPath)
@@ -26,4 +26,5 @@ for (x, y, w, h) in faces:
     cv2.waitKey(0)
 
 cv2.imshow("Faces found", image)
+cv2.imwrite("Face_found.png", image)
 cv2.waitKey(0)

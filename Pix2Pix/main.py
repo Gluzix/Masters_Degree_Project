@@ -67,6 +67,9 @@ class Pix2Pix:
         ret, image = cap.read()
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
+        if not gray_image:
+            return
+
         faces = faceCascade.detectMultiScale(
             gray_image,
             scaleFactor=1.1,
@@ -101,7 +104,7 @@ class Pix2Pix:
                 shape_numpy_arr[i] = (shape.part(i).x, shape.part(i).y)
 
             for i, (x, y) in enumerate(shape_numpy_arr):
-                cv2.circle(blank_image, (x, y), 2, (255, 255, 255), -1)
+                cv2.circle(blank_image, (x, y), 1, (255, 255, 255), -1)
 
         cap.release()
 
@@ -109,7 +112,7 @@ class Pix2Pix:
         test_ = image_pil.resize((256, 256), resample=Image.NEAREST)
 
         # Model loading...
-        model = load_model("E:/Projekt Magisterski/resources/model_resources/model_071500.h5")
+        model = load_model("model_128000.h5")
 
         arr = img_to_array(test_)
         arr = arr[np.newaxis, ...]
@@ -154,7 +157,26 @@ class Pix2Pix:
         axs[2].imshow(X_fakeB[0])
         axs[2].set_title('Fake')
 
-        cv2.imshow("test", X_fakeB[0])
+        pyplot.show()
+
+    @staticmethod
+    def try_to_predict_same_image(path_to_dataset: str, path_to_model: str):
+        dataset = Pix2Pix.load_real_samples(path_to_dataset)
+        model = load_model(path_to_model)
+        [X_realA, X_realB], _ = Pix2PixTrainer.generate_one_real_sample(dataset, 1)
+
+        X_fakeB, _ = Pix2PixTrainer.generate_fake_samples(model, X_realA, 1)
+        X_fakeB = (X_fakeB + 1) / 2.0
+        X_realB = (X_realB + 1) / 2.0
+
+        fig, axs = pyplot.subplots(1, 3)
+
+        axs[0].imshow(X_realB[0])
+        axs[0].set_title('Real')
+        axs[1].imshow(X_realA[0])
+        axs[1].set_title('Landmark')
+        axs[2].imshow(X_fakeB[0])
+        axs[2].set_title('Fake')
 
         pyplot.show()
 
@@ -192,23 +214,93 @@ class Pix2Pix:
         print('saved dataset: ', filename)
         Pix2Pix.plot_images(filename)
 
+    @staticmethod
+    def predict_from_webcam():
+        detector = dlib.get_frontal_face_detector()
+        predictor = dlib.shape_predictor(
+            'E:/Projekt Magisterski/resources/pre_trained_data/shape_predictor_68_face_landmarks.dat')
+        model = load_model("model_128000.h5")
+        cascPath = "haarcascade_frontalface_default.xml"
+        faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + cascPath)
 
+        vid = cv2.VideoCapture(0)
+        while True:
+            ret, frame = vid.read()
+            gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            faces = faceCascade.detectMultiScale(gray_image, 1.1, 4)
+
+            if len(faces) == 0:
+                continue
+
+            (x, y, w, h) = faces[0]
+
+            cropped_image_gray = gray_image[y - 30:y + h + 30, x - 30:x + w + 30]
+            cropped_image_color = frame[y - 30:y + h + 30, x - 30:x + w + 30]
+
+            try:
+                resized_cropped_image_gray = cv2.resize(cropped_image_gray, (256, 256), interpolation=cv2.INTER_NEAREST)
+                resized_cropped_image_color = cv2.resize(cropped_image_color, (256, 256),
+                                                         interpolation=cv2.INTER_NEAREST)
+            except Exception as e:
+                print(str(e))
+                continue
+
+            rects = detector(resized_cropped_image_gray, 1)
+
+            if not rects:
+                continue
+
+            height, width, channel = resized_cropped_image_color.shape
+            blank_image = np.zeros((height, width, 3), np.uint8)
+
+            for rect in rects:
+                shape = predictor(cropped_image_gray, rect)
+                shape_numpy_arr = np.zeros((68, 2), dtype='int')
+                for i in range(0, 68):
+                    shape_numpy_arr[i] = (shape.part(i).x, shape.part(i).y)
+
+                for i, (x, y) in enumerate(shape_numpy_arr):
+                    cv2.circle(blank_image, (x, y), 1, (255, 255, 255), -1)
+
+            realA = blank_image[np.newaxis, ...]
+
+            X_fakeB, _ = Pix2PixTrainer.generate_fake_samples(model, realA, 1)
+
+            X_fakeB = (X_fakeB + 1) / 2.0
+
+            cv2.imshow('frame', X_fakeB[0])
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        vid.release()
+        cv2.destroyAllWindows()
+
+
+# Sprawdz jutro funkcje generate_fake_samples (prawdopodobnie ona jeszcze dzieli to co jej podaje.
+# Spróbuj podac bezposrednio obrazek do modelu
 if __name__ == '__main__':
-    # Pix2Pix.try_to_predict('E:/Projekt Magisterski/Pix2Pix/maps_256_kamil_256_.npz',
-    #                        'E:/Projekt Magisterski/Pix2Pix/model_120000.h5')
+    # Pix2Pix.try_to_predict_same_image('maps_256_kamil_smaller_landmarks_new_validation_samples.npz',
+    #                                   'datasets and ready models/merkel_dataset_2500_resized_smaller_landmark_first/model_250000.h5')
 
+    # Pix2Pix.try_to_predict('maps_256_kamil_smaller_landmarks_new_validation_samples.npz',
+    #                        'datasets and ready models/duda_big_dataset_batch_10_around_4000_samples/model_192000.h5')
+
+    # Pix2Pix.predict_from_webcam()
+    #                        'datasets and ready models/duda_big_dataset_batch_10_around_4000_samples/model_192000.h5') #Wygenerowany model
+    Pix2Pix.create_dataset('src/', #Folder zawierający czarne obrazy z landmarkami
+                           'tar/', #Folder zawierający prawdziwe obrazy odpowiadające tym z folderu /src
+                           'maps_256_trump_500_samples.npz') #Dataset twarzy trumpa, na którym uczy się model
+    #
+    # Pix2Pix.plot_images("maps_256_duda_at_begin_new_samples_with_resize.npz") #Dataset twarzy trumpa, na którym uczy się model
+    #
+    # Pix2Pix.train('maps_256_trump_256_at_begin.npz') #Dataset twarzy trumpa, na którym uczy się model
+
+    # Pix2Pix.try_to_predict('maps_256_kamil_smaller_landmarks_new_validation_samples.npz', #Testowy dataset mojej twarzy
+    #                        'datasets and ready models/duda_big_dataset_batch_10_around_4000_samples/model_192000.h5') #Wygenerowany model
+
+    # Pix2Pix.try_to_predict_and_show_multiple_frames('maps_256_kamil_smaller_landmarks_new_validation_samples.npz', #Testowy dataset mojej twarzy
+    #                        'model_128000.h5') #Wygenerowany model
+    #
     # Pix2Pix.gather_image_and_try_predict()
-
-    # Pix2Pix.train('maps_256_trump_256_at_begin.npz')
-
-    # Pix2Pix.try_to_predict('maps_256_kamil.npz',
-    #                        'model_062560.h5')
-
-    # Pix2Pix.create_dataset('src/',
-    #                        'tar/',
-    #                        'maps_256_duda_256_.npz')
-
-    # Pix2Pix.try_to_predict_and_show_multiple_frames('maps_256_kamil_256_.npz', 'model_142800.h5')
-    # Pix2Pix.try_to_predict_and_show_multiple_frames('maps_256_kamil_256_.npz', 'model_120000.h5')
-
-    # Pix2Pix.plot_images("maps_256_trump_256_at_begin.npz")

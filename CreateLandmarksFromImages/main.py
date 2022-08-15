@@ -42,8 +42,8 @@ if __name__ == '__main__':
         cropped_image_color = image[y - 70:y + h + 70, x - 70:x + w + 70]
 
         try:
-            resized_cropped_image_gray = cv2.resize(cropped_image_gray, (256, 256), interpolation=cv2.INTER_CUBIC)
-            resized_cropped_image_color = cv2.resize(cropped_image_color, (256, 256), interpolation=cv2.INTER_CUBIC)
+            resized_cropped_image_gray = cv2.resize(cropped_image_gray, (256, 256), interpolation=cv2.INTER_NEAREST)
+            resized_cropped_image_color = cv2.resize(cropped_image_color, (256, 256), interpolation=cv2.INTER_NEAREST)
         except Exception as e:
             print(str(e))
             continue

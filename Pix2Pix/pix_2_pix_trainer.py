@@ -1,5 +1,6 @@
 from numpy import zeros
 from numpy import ones
+from numpy import newaxis
 from numpy.random import randint
 from matplotlib import pyplot
 
@@ -63,6 +64,15 @@ class Pix2PixTrainer:
         ix = randint(0, trainA.shape[0], n_samples)
         X1, X2 = trainA[ix], trainB[ix]
         y = ones((n_samples, patch_shape, patch_shape, 1))
+        return [X1, X2], y
+
+    @staticmethod
+    def generate_one_real_sample(dataset, patch_shape):
+        trainA, trainB = dataset
+        X1, X2 = trainA[0], trainB[0]
+        X1 = X1[newaxis, ...]
+        X2 = X2[newaxis, ...]
+        y = ones((1, patch_shape, patch_shape, 1))
         return [X1, X2], y
 
     @staticmethod
