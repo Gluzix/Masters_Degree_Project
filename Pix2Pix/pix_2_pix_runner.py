@@ -7,13 +7,12 @@ from matplotlib import pyplot
 import cv2
 import dlib
 import numpy as np
-from PIL import Image
 from numpy import load
 from Pix2Pix.pix_2_pix_model import Pix2PixModel
 from Pix2Pix.pix_2_pix_trainer import Pix2PixTrainer
 
 
-class Pix2Pix:
+class Pix2PixRunner:
     def __init__(self):
         pass
 
@@ -59,89 +58,8 @@ class Pix2Pix:
         pyplot.show()
 
     @staticmethod
-    def gather_image_and_try_predict():
-        cascPath = "haarcascade_frontalface_default.xml"
-        faceCascade = cv2.CascadeClassifier(cascPath)
-
-        cap = cv2.VideoCapture(0)
-        ret, image = cap.read()
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        if not gray_image:
-            return
-
-        faces = faceCascade.detectMultiScale(
-            gray_image,
-            scaleFactor=1.1,
-            minNeighbors=5,
-            minSize=(30, 30),
-            flags=cv2.CASCADE_SCALE_IMAGE
-        )
-
-        (x, y, w, h) = faces[0]
-
-        cropped_image_gray = gray_image[y - 70:y + h + 70, x - 70:x + w + 70]
-        cropped_image_color = image[y - 70:y + h + 70, x - 70:x + w + 70]
-
-        try:
-            resized_cropped_image_gray = cv2.resize(cropped_image_gray, (256, 256), interpolation=cv2.INTER_CUBIC)
-            resized_cropped_image_color = cv2.resize(cropped_image_color, (256, 256), interpolation=cv2.INTER_CUBIC)
-        except Exception as e:
-            print(str(e))
-            return
-
-        detector = dlib.get_frontal_face_detector()
-        predictor = dlib.shape_predictor(
-            'E:/Projekt Magisterski/resources/pre_trained_data/shape_predictor_68_face_landmarks.dat')
-        rects = detector(resized_cropped_image_gray, 1)
-
-        height, width, channel = resized_cropped_image_color.shape
-        blank_image = np.zeros((height, width, 3), np.uint8)
-        for rect in rects:
-            shape = predictor(resized_cropped_image_gray, rect)
-            shape_numpy_arr = np.zeros((68, 2), dtype='int')
-            for i in range(0, 68):
-                shape_numpy_arr[i] = (shape.part(i).x, shape.part(i).y)
-
-            for i, (x, y) in enumerate(shape_numpy_arr):
-                cv2.circle(blank_image, (x, y), 1, (255, 255, 255), -1)
-
-        cap.release()
-
-        image_pil = Image.fromarray(blank_image)
-        test_ = image_pil.resize((256, 256), resample=Image.NEAREST)
-
-        # Model loading...
-        model = load_model("model_128000.h5")
-
-        arr = img_to_array(test_)
-        arr = arr[np.newaxis, ...]
-
-        X_fakeB, _ = Pix2PixTrainer.generate_fake_samples(model, arr, 1)
-        X_fakeB = (X_fakeB + 1) / 2.0
-
-        fig, axs = pyplot.subplots(2, 2)
-        axs[0, 0].imshow(arr[0])
-        axs[0, 0].set_title('from camera - landmark')
-        axs[0, 1].imshow(X_fakeB[0])
-        axs[0, 1].set_title('from camera - predicted')
-
-        dataset = Pix2Pix.load_real_samples('E:/Projekt Magisterski/resources/model_resources/maps_256_2.npz')
-        [X_realA_2, X_realB_2], _ = Pix2PixTrainer.generate_real_samples(dataset, 1, 1)
-        X_realA_2 = (X_realA_2 + 1) / 2.0
-        X_fakeB_2, _ = Pix2PixTrainer.generate_fake_samples(model, X_realA_2, 1)
-        X_fakeB_2 = (X_fakeB_2 + 1) / 2.0
-
-        axs[1, 0].imshow(X_realA_2[0])
-        axs[1, 0].set_title('from dataset - landmark')
-        axs[1, 1].imshow(X_fakeB_2[0])
-        axs[1, 1].set_title('from dataset - predicted')
-
-        pyplot.show()
-
-    @staticmethod
     def try_to_predict(path_to_dataset: str, path_to_model: str):
-        dataset = Pix2Pix.load_real_samples(path_to_dataset)
+        dataset = Pix2PixRunner.load_real_samples(path_to_dataset)
         model = load_model(path_to_model)
         [X_realA, X_realB], _ = Pix2PixTrainer.generate_real_samples(dataset, 1, 1)
         X_realA = (X_realA + 1) / 2.0
@@ -161,7 +79,7 @@ class Pix2Pix:
 
     @staticmethod
     def try_to_predict_same_image(path_to_dataset: str, path_to_model: str):
-        dataset = Pix2Pix.load_real_samples(path_to_dataset)
+        dataset = Pix2PixRunner.load_real_samples(path_to_dataset)
         model = load_model(path_to_model)
         [X_realA, X_realB], _ = Pix2PixTrainer.generate_one_real_sample(dataset, 1)
 
@@ -182,7 +100,7 @@ class Pix2Pix:
 
     @staticmethod
     def try_to_predict_and_show_multiple_frames(path_to_dataset: str, path_to_model: str):
-        dataset = Pix2Pix.load_real_samples(path_to_dataset)
+        dataset = Pix2PixRunner.load_real_samples(path_to_dataset)
         model = load_model(path_to_model)
         [X_realA, X_realB] = Pix2PixTrainer.generate_real_samples_array(dataset)
         counter = 0
@@ -192,7 +110,6 @@ class Pix2Pix:
             realA = (realA + 1) / 2.0
             X_fakeB, y = Pix2PixTrainer.generate_fake_samples(model, realA, 1)
             X_fakeB = (X_fakeB + 1) / 2.0
-            # vis = np.concatenate((realB, X_fakeB[0]), axis=1)
             cv2.imshow("name1", X_fakeB[0])
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -200,7 +117,7 @@ class Pix2Pix:
 
     @staticmethod
     def train(path_to_dataset: str):
-        dataset = Pix2Pix.load_real_samples(path_to_dataset)
+        dataset = Pix2PixRunner.load_real_samples(path_to_dataset)
         image_shape = dataset[0].shape[1:]
         model = Pix2PixModel(image_shape)
         trainer = Pix2PixTrainer(model.discriminator, model.generator, model.gan, dataset)
@@ -208,27 +125,26 @@ class Pix2Pix:
 
     @staticmethod
     def create_dataset(path_to_source: str, path_to_target: str, filename: str):
-        [src_images, tar_images] = Pix2Pix.load_images(path_to_source, path_to_target)
+        [src_images, tar_images] = Pix2PixRunner.load_images(path_to_source, path_to_target)
         print('Loaded: ', src_images.shape, tar_images.shape)
         np.savez_compressed(filename, src_images, tar_images)
         print('saved dataset: ', filename)
-        Pix2Pix.plot_images(filename)
+        Pix2PixRunner.plot_images(filename)
 
     @staticmethod
-    def predict_from_webcam():
+    def predict_from_webcam(predictor_path: str, model_path: str, haarcascade_path: str):
         detector = dlib.get_frontal_face_detector()
-        predictor = dlib.shape_predictor(
-            'E:/Projekt Magisterski/resources/pre_trained_data/shape_predictor_68_face_landmarks.dat')
-        model = load_model("model_128000.h5")
-        cascPath = "haarcascade_frontalface_default.xml"
-        faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + cascPath)
+        predictor = dlib.shape_predictor(predictor_path)
+        model = load_model(model_path)
+
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + haarcascade_path)
 
         vid = cv2.VideoCapture(0)
         while True:
             ret, frame = vid.read()
             gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            faces = faceCascade.detectMultiScale(gray_image, 1.1, 4)
+            faces = face_cascade.detectMultiScale(gray_image, 1.1, 4)
 
             if len(faces) == 0:
                 continue
@@ -263,11 +179,12 @@ class Pix2Pix:
                 for i, (x, y) in enumerate(shape_numpy_arr):
                     cv2.circle(blank_image, (x, y), 1, (255, 255, 255), -1)
 
-            realA = blank_image[np.newaxis, ...]
+            realA = np.expand_dims(blank_image, axis=0)
+            realA = (realA - 127.5) / 127.5
 
             X_fakeB, _ = Pix2PixTrainer.generate_fake_samples(model, realA, 1)
-
             X_fakeB = (X_fakeB + 1) / 2.0
+            X_fakeB[0] = cv2.cvtColor(X_fakeB[0], cv2.COLOR_BGR2RGB)
 
             cv2.imshow('frame', X_fakeB[0])
 
@@ -277,30 +194,18 @@ class Pix2Pix:
         vid.release()
         cv2.destroyAllWindows()
 
+    @staticmethod
+    def test_load_from_npz_image_and_predict(real_samples_path: str, model_path: str):
+        dataset = Pix2PixRunner.load_real_samples(real_samples_path)
+        model = load_model(model_path)
+        trainA, trainB = dataset
 
-# Sprawdz jutro funkcje generate_fake_samples (prawdopodobnie ona jeszcze dzieli to co jej podaje.
-# Spróbuj podac bezposrednio obrazek do modelu
-if __name__ == '__main__':
-    # Pix2Pix.try_to_predict_same_image('maps_256_kamil_smaller_landmarks_new_validation_samples.npz',
-    #                                   'datasets and ready models/merkel_dataset_2500_resized_smaller_landmark_first/model_250000.h5')
+        img = trainA[0]
+        img = img[np.newaxis, ...]
 
-    # Pix2Pix.try_to_predict('maps_256_kamil_smaller_landmarks_new_validation_samples.npz',
-    #                        'datasets and ready models/duda_big_dataset_batch_10_around_4000_samples/model_192000.h5')
+        X_fakeB, _ = Pix2PixTrainer.generate_fake_samples(model, img, 1)
 
-    # Pix2Pix.predict_from_webcam()
-    #                        'datasets and ready models/duda_big_dataset_batch_10_around_4000_samples/model_192000.h5') #Wygenerowany model
-    Pix2Pix.create_dataset('src/', #Folder zawierający czarne obrazy z landmarkami
-                           'tar/', #Folder zawierający prawdziwe obrazy odpowiadające tym z folderu /src
-                           'maps_256_trump_500_samples.npz') #Dataset twarzy trumpa, na którym uczy się model
-    #
-    # Pix2Pix.plot_images("maps_256_duda_at_begin_new_samples_with_resize.npz") #Dataset twarzy trumpa, na którym uczy się model
-    #
-    # Pix2Pix.train('maps_256_trump_256_at_begin.npz') #Dataset twarzy trumpa, na którym uczy się model
+        X_fakeB = (X_fakeB + 1) / 2.0
 
-    # Pix2Pix.try_to_predict('maps_256_kamil_smaller_landmarks_new_validation_samples.npz', #Testowy dataset mojej twarzy
-    #                        'datasets and ready models/duda_big_dataset_batch_10_around_4000_samples/model_192000.h5') #Wygenerowany model
-
-    # Pix2Pix.try_to_predict_and_show_multiple_frames('maps_256_kamil_smaller_landmarks_new_validation_samples.npz', #Testowy dataset mojej twarzy
-    #                        'model_128000.h5') #Wygenerowany model
-    #
-    # Pix2Pix.gather_image_and_try_predict()
+        pyplot.imshow(X_fakeB[0])
+        pyplot.show()
