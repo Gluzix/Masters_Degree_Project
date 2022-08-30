@@ -30,7 +30,6 @@ class LiveDataWidget(QWidget, Ui_Form):
 
         self.thread.started.connect(self.open_cv_worker.run)
         self.open_cv_worker.pixmap_ready.connect(self.image_widget.set_pixmap)
-        self.open_cv_worker.black_pixmap_ready.connect(self.black_image_widget.set_pixmap)
         self.acquisition_start.connect(self.open_cv_worker.start)
         self.acquisition_stop.connect(self.open_cv_worker.stop)
 
