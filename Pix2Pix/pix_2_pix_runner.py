@@ -137,7 +137,7 @@ class Pix2PixRunner:
         predictor = dlib.shape_predictor(predictor_path)
         model = load_model(model_path)
 
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + haarcascade_path)
+        face_cascade = cv2.CascadeClassifier(haarcascade_path)
 
         vid = cv2.VideoCapture(0)
         while True:
@@ -193,19 +193,3 @@ class Pix2PixRunner:
 
         vid.release()
         cv2.destroyAllWindows()
-
-    @staticmethod
-    def test_load_from_npz_image_and_predict(real_samples_path: str, model_path: str):
-        dataset = Pix2PixRunner.load_real_samples(real_samples_path)
-        model = load_model(model_path)
-        trainA, trainB = dataset
-
-        img = trainA[0]
-        img = img[np.newaxis, ...]
-
-        X_fakeB, _ = Pix2PixTrainer.generate_fake_samples(model, img, 1)
-
-        X_fakeB = (X_fakeB + 1) / 2.0
-
-        pyplot.imshow(X_fakeB[0])
-        pyplot.show()
